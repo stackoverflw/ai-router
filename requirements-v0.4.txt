@@ -1,0 +1,3 @@
+# Semantic Router v0.4 的额外依赖
+sentence-transformers>=3.0.0
+numpy>=1.26.0

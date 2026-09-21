@@ -1,176 +1,86 @@
 import requests
-import json
-
+import time
 
 OLLAMA_URL = "http://localhost:11434/api/generate"
+MODEL = "qwen3:4b"
 
-
-def ask_local_model(prompt):
-
+def ask_router(prompt):
     data = {
-        "model":"qwen3:4b",
-        "prompt":prompt,
-        "stream":False,
-        "options":{
-            "think":False,
-            "temperature":0,
-            "num_predict":2,
-            "num_ctx":128
+        "model": MODEL,
+        "prompt": prompt,
+        "stream": False,
+        "keep_alive": -1,
+        "options": {
+            "temperature": 0,
+            "num_predict": 5,
+            "num_ctx": 512
+        }
     }
-}
 
     response = requests.post(
         OLLAMA_URL,
-        json=data
+        json=data,
+        timeout=30
     )
 
     response.raise_for_status()
 
-    return response.json()["response"]
+    return response.json()["response"].strip()
 
-
-def extract_json(text):
-
-    import re
-
-    matches = re.findall(
-        r'\{[\s\S]*?\}',
-        text
-    )
-
-    if not matches:
-        raise Exception("没有找到JSON")
-
-    # 从后往前尝试解析
-    for item in reversed(matches):
-
-        try:
-            return json.loads(item)
-
-        except:
-            continue
-
-    raise Exception("没有有效JSON")
-
-def decide_route(info):
-
-    """
-    Python决策层
-    """
-
-    capability = info.get(
-        "local_capability",
-        0
-    )
-
-    tokens = info.get(
-        "estimated_tokens",
-        0
-    )
-
-    difficulty = info.get(
-        "difficulty",
-        ""
-    )
-
-
-    if capability >= 0.7:
-        return "local"
-
-
-    if tokens > 1000:
-        return "cloud"
-
-
-    if difficulty == "hard":
-        return "cloud"
-
-
-    return "local"
 
 def router(user_input):
 
-
     prompt = f"""
-你是AI路由器。
+判断下面的用户任务应该使用 LOCAL 还是 CLOUD。
 
-判断任务：
+LOCAL：
+简单任务，本地小模型可以完成。
 
-local:
-简单问题、简单代码、翻译
+CLOUD：
+复杂任务、本地小模型容易失败的任务、
+需要大量推理或大量生成的任务。
 
-cloud:
-复杂系统设计、高难度推理、大型代码
+只允许输出：
+LOCAL
+或者
+CLOUD
 
+不要解释，不要输出其他内容。
 
-只输出：
-local 或 cloud
-
-
-任务:
+用户任务：
 {user_input}
 """
 
+    start = time.perf_counter()
 
-    result = ask_local_model(prompt)
+    raw = ask_router(prompt)
 
+    elapsed = time.perf_counter() - start
 
-    print("\n原始输出:")
-    print(result)
+    text = raw.upper()
 
+    if "CLOUD" in text:
+        route = "cloud"
+    elif "LOCAL" in text:
+        route = "local"
+    else:
+        route = "cloud"
 
-    try:
-
-        data = extract_json(result)
-
-        return data
-
-
-    except Exception as e:
-
-        return {
-            "route":"local",
-            "confidence":0,
-            "estimated_tokens":0,
-            "difficulty":"unknown",
-            "local_capability":0,
-            "reason":f"JSON解析失败:{e}"
-        }
-
-
+    return route, raw, elapsed
 
 
 if __name__ == "__main__":
 
+    user_input = input("请输入任务：")
 
-    user_input=input("请输入任务:")
+    route, raw, elapsed = router(user_input)
 
-    analysis = router(user_input)
+    print("\n========== Router ==========")
 
-    final_route = decide_route(analysis)
+    print("\n模型原始输出:")
+    print(raw)
 
-    analysis["final_route"] = final_route
+    print("\n最终路由:")
+    print(route)
 
-    result = analysis
-
-
-    print("\nAI判断:")
-
-    print(
-        json.dumps(
-            result,
-            indent=4,
-            ensure_ascii=False
-        )
-    )
-
-
-    if result["route"]=="cloud":
-
-        print("\n下一步:")
-        print("调用云模型")
-
-    else:
-
-        print("\n下一步:")
-        print("本地模型处理")
+    print(f"\nRouter耗时: {elapsed:.3f} 秒")
