@@ -1,0 +1,23 @@
+# 依赖与构建产物
+node_modules/
+out/
+dist/
+dist-electron/
+release/
+
+# 本地缓存
+.vite/
+*.tsbuildinfo
+
+# 日志
+*.log
+npm-debug.log*
+
+# 编辑器
+.vscode/*
+!.vscode/extensions.json
+.idea/
+.DS_Store
+
+# 一致性测试基准由 Python 侧生成，属于需要入库的测试资产，因此不忽略：
+# desktop/tests/fixtures/routing-parity.json

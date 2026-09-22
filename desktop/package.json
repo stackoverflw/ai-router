@@ -1,0 +1,31 @@
+{
+  "name": "ai-router-desktop",
+  "version": "0.7.0",
+  "private": true,
+  "description": "AI Router 桌面端：本地 / 云端混合推理的任务编排客户端",
+  "main": "out/main/index.js",
+  "type": "module",
+  "scripts": {
+    "dev": "electron-vite dev",
+    "build": "npm run typecheck && electron-vite build",
+    "preview": "electron-vite preview",
+    "typecheck": "tsc --noEmit -p tsconfig.node.json && tsc --noEmit -p tsconfig.web.json",
+    "parity": "node scripts/parity-check.mjs",
+    "test": "node --test tests/*.test.mjs"
+  },
+  "dependencies": {
+    "electron-log": "^5.2.4"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.2",
+    "@types/react": "^19.0.2",
+    "@types/react-dom": "^19.0.2",
+    "@vitejs/plugin-react": "^4.3.4",
+    "electron": "^33.2.1",
+    "electron-vite": "^4.0.0",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "typescript": "^5.7.2",
+    "vite": "^6.0.5"
+  }
+}
