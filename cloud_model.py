@@ -2,7 +2,7 @@ def ask_cloud(prompt):
 
     print("正在调用云模型...")
 
-    # 这里以后替换成真实API
+
 
     return f"""
 [云模型回答]

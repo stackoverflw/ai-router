@@ -1,3 +1,5 @@
-# Semantic Router v0.4 的额外依赖
+# Semantic Router v0.5 的额外依赖
+# CrossEncoder 是主语义判定器；SentenceTransformer 同时提供 embedding 降级。
 sentence-transformers>=3.0.0
 numpy>=1.26.0
+torch>=2.2.0
